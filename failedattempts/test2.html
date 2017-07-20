@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> 
+
+body { 
+	font: 12px times;
+	width:960px;
+	height: 600px;
+	position: relative;
+}
+
+path { 
+    stroke-width: 3;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.grid .tick {
+    stroke: lightgrey;
+    stroke-opacity: 0.3;
+    shape-rendering: crispEdges;
+}
+.grid path {
+    stroke-width: 0;
+}
+
+</style>
+<body>
+
+<!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
+<script src="d3/d3.v3.min.js"></script>
+
+<script>
+
+var margin = {top: 30, right: 80, bottom: 30, left: 80},
+    width = 800 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+// Could also try 
+//    width: 100% - margin.left - margin.right,
+//    height: 100% - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%Y-%m").parse;
+
+var x = d3.time.scale().range([0, width]);
+var y = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis().scale(x)
+    .orient("bottom").ticks(10);
+
+var yAxis = d3.svg.axis().scale(y)
+    .orient("left").ticks(10);
+/* Line definition was up here earlier
+// Define the line
+var zipLine = d3.svg.line()
+    .defined(function(d) { return d.Zip != 0; })	// Omits missing value instead of drawing it with value of 0 
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.Zip); });
+
+// Define the line
+var countyLine = d3.svg.line()
+    .defined(function(d) { return d.County != 0; })	// Omits missing value instead of drawing it with value of 0 
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.County); });
+*/ 
+
+// Functions to add grid lines
+function make_x_axis() {
+     return d3.svg.axis()
+	.scale(x)
+	.orient("bottom")
+	.ticks(20)
+}
+function make_y_axis() {
+     return d3.svg.axis()
+	.scale(y)
+	.orient("left")
+	.ticks(10)
+}
+   
+var lineNames = d3.keys(data[0]).filter(function(key) {return key !== "date"; });
+//console.log(lineNames);
+var color = d3.scale.category10();
+// Adds the svg canvas
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+	.attr("id", "lineChartCanvas")
+    .append("g")
+        .attr("transform", 
+              "translate(" + margin.left + "," + margin.top + ")");
+
+var lineChart = d3.select("#lineChartCanvas").select("g").selectAll("line")
+   .data(lineNames)
+   .enter()//append("g")
+   .attr("class","line")
+   .attr("lineName",function(d){console.log(d); return d;});
+
+// Get the data
+var lineData = d3.csv("data/data.csv", function(error, data) {
+    data.forEach(function(d) {
+        d.date = parseDate(d.date);
+        d.Zip= +d.Zip;
+	d.County= +d.County;
+    });
+
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return Math.max(d.County, d.Zip);})]);  // Return the maximum value of either d.County or d.Zip to set the y range
+
+// TODO Create Lines data object to hold both zipLine and countyLine
+// TODO Add labels and colors to line object
+// TODO Display SVG path 
+
+
+
+// Create list of lineNames
+//console.log(color);
+/*
+var lines = d3.select("#lineChartCanvas").selectAll("#line")
+	.data(lineNames)
+	.enter()
+	.append("line");
+*/
+
+//lineChart.append("line")
+
+
+/*
+var line = d3.svg.line()
+    .defined(function(d) { console.log(d); return d.Zip!= 0; })        // Omits missing value instead of drawing it with value of 0 
+    .x(function(d) {console.log(d.date); return x(d.date); })
+    .y(function(d) {console.log(lines);  return y(d.Zip); });
+*/
+/*
+var line = d3.svg.line()
+    .defined(function(d) { console.log(d); return d.County != 0; })        // Omits missing value instead of drawing it with value of 0 
+    .x(function(d) {console.log(d.date); return x(d.date); })
+    .y(function(d) {console.log(lines);  return y(d.County); });
+*/
+    svg.append("path")
+        .attr("class", "line")
+        .style("stroke", "steelblue")
+        .attr("d", line(data));
+/*
+// Define the line
+var zipLine = d3.svg.line()
+    .defined(function(d) { return d.Zip != 0; })	// Omits missing value instead of drawing it with value of 0 
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.Zip]); });
+//    .y(function(d) { return y(d["Zip"]); });
+
+// Define the line
+var countyLine = d3.svg.line()
+    .defined(function(d) { return d.County != 0; })	// Omits missing value instead of drawing it with value of 0 
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.County); });
+
+    svg.append("path")
+        .attr("class", "line")
+	.style("stroke", "steelblue")
+        .attr("d", zipLine(data));
+
+    // Add the countyLine path.
+    svg.append("path")
+        .attr("class", "line")
+	.style("stroke", "green") 
+//	.style("stroke", countyLine.color)
+//	.style("stroke", function(){ return d.color = color(d.key);})
+        .attr("d", countyLine(data));
+*/
+    // Add the X Axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    // Label X Axis 
+    svg.append("text")
+	.attr("transform", "rotate(-90)")
+	.attr("y", 0 - (margin.left))
+	.attr("x",0 - (height / 2))
+	.attr("dy", "1em")
+	.style("text-anchor", "middle")
+	.text("Median Price for 2 Bed Units");
+
+    // Add the Y Axis
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    // Add grid lines
+    svg.append("g")
+	.attr("class", "grid")
+	.attr("transform", "translate(0," + height + ")")
+	.call(make_x_axis()
+	.tickSize(-height, 0, 0)
+	.tickFormat("")
+    )
+    svg.append("g")
+	.attr("class", "grid")
+	.call(make_y_axis()
+	.tickSize(-width, 0, 0)
+	.tickFormat("")
+    )
+
+    // Add the chart title
+    svg.append("text")
+	.attr("x", (width / 2))
+	.attr("y", 0 - (margin.top / 2))
+	.attr("text-anchor", "middle")
+	.style("font-size", "22px")
+//	.style("text-decoration", "bold")
+	.text("ZHVI Price History");
+
+//console.log(data[0]);
+//console.log(d3.keys(data[0]));
+//console.log(d3.keys(data[0]).filter(function(key) {return key !== "date"; }));
+
+    // Add legend
+    var legend = svg.selectAll(".legend")
+	.data(lineNames)
+	.enter().append("g")
+	.attr("class","legend")
+	.attr("transform",function(d,i) {return "translate(0," + i * 20 + ")"; });
+
+    legend.append("rect")
+	.attr("x",width - (margin.right + 18))
+	.attr("height", 14)
+	.attr("width", 14)
+	.style("fill",function(d) {return color(d);});
+
+    legend.append("text")
+	.attr("x",width - margin.right)
+	.attr("y",9)
+	.attr("dy",".35em", "end") 
+	.text(function(d) {return d;});
+});
+
+// 2) Add legend
+	// Match Legend colors with Line colors
+// 5) Add Header with more information about chart
+// 7) Add tooltips
+</script>
+</body>
