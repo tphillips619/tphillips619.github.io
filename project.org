@@ -34,9 +34,11 @@
 *** Other methods that could have worked
 **** https://github.com/jgoodall/us-maps
 **** https://gist.github.com/jefffriesen/6892860#file-zips_us_topo-json
+*** Mike Bostock's 
 ** Mike Bostock's Choropleth example
 *** https://bl.ocks.org/mbostock/3306362
-
+*** Static population map, focus California
+**** https://bl.ocks.org/mbostock/fb6c1e5ff700f9713a9dc2f0fd392c35
 * Post static web page
 ** Bootstrap needed?
 *** Can use D3-Tips-And-Tricks.pdf
