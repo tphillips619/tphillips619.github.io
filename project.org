@@ -1,4 +1,49 @@
+* Rubric to get full credit
+** 1) Follow the hybrid structure as stated by the essay
+*** Martini Glass
+**** Slide show with jumping off point
+*** Interactive Slideshow
+**** Follow an author-directed path through slideshow (Can go forward or back)
+**** Can follow tangents on each slide
+**** Example
+***** http://www.nytimes.com/interactive/2010/02/02/us/politics/20100201-budget-porcupine-graphic.html
+***** http://www.nytimes.com/interactive/2008/10/11/business/20081011_BEAR_MARKETS.html
+*** Drill-Down Story
+** 2) Utilize scenes
+*** Consistent structure between scenes
+*** Bootstrap is a good template
+** 3) Utilize annotations
+*** Tooltips
+** 4) Utilize parameters
+*** Examples
+**** Slide number
+**** Current state
+**** Which chart to show?
+**** Chart year
+**** Include forecasts?
+**** Animate?
+** 5) Utilize triggers
 * Scene1
 ** Paragraph label
 ** Line Select
+
+* Scene2: Zip Code Map Choropleth
+** Finding Zip Code shapes
+*** Used
+**** https://github.com/storiesofsolidarity/us-data/blob/gh-pages/geography/zcta/California.topo.json?short_path=35e47f6
+*** Other methods that could have worked
+**** https://github.com/jgoodall/us-maps
+**** https://gist.github.com/jefffriesen/6892860#file-zips_us_topo-json
+** Mike Bostock's Choropleth example
+*** https://bl.ocks.org/mbostock/3306362
+
 * Post static web page
+** Bootstrap needed?
+*** Can use D3-Tips-And-Tricks.pdf
+** npm
+*** npm install topojson-client
+** plotly
+*** pip install plotly
+** leaflet.js
+** github.io
+* Write essay explicitly discussing how each rubric element is included in project

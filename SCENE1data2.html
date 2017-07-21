@@ -11,7 +11,7 @@ header {
 body { 
 	font: 12px arial;
 	width:960px;
-	height: 600px;
+	height: 500px;
 	position: relative;
 }
 
@@ -141,7 +141,8 @@ d3.csv("data/data2.csv", function(error, data) {
         svg.append("path")
             .attr("class","line")
             .style("stroke", function() {
-                return d.color = color(d.key); }) 
+                return d.color = color(d.key); })
+            .attr("id", 'tag'+d.key.replace(/\s+/g, ''))
             .attr("d",priceline(d.values));
 
         // Add the Legend
@@ -152,6 +153,16 @@ d3.csv("data/data2.csv", function(error, data) {
             .attr("class", "legend")
             .style("fill", function() { 
                 return d.color = color(d.key); })
+            .on("click", function(){
+                // Determine if current line is visible
+                var active = d.active ? false : true,
+                newOpacity = active ? 0 : 1;
+                // Hide or show the elements based on the ID
+                d3.select("#tag"+d.key.replace(/\s+/g, '')) 
+                    .transition().duration(100)
+                    .style("opacity", newOpacity);
+                d.active = active;
+            })
             .text(d.key);
 
     	// Add the scatterplot (needed to sense mouseovers for tooltip)
