@@ -7,10 +7,9 @@
 <!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  -->
-<!-- <script src="http://d3js.org/d3.v3.min.js"></script> -->
-<!-- <script src="http://code.jquery.com/jquery.js"></script> -->
-<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script> -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script> -->
 
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <script src="js/jquery.min.js"></script>
@@ -18,22 +17,7 @@
     <script src="d3/d3.v3.min.js"></script>
     <script src="js/jquery.js"></script>
     <script src="js/bootstrap.min.js"></script>
-
-    <!--    <script src="https://d3js.org/d3-format.v1.min.js"></script> -->
     <style> 
-/*
-   header {
-    font: 18px times; 
-    width:960px;
-	height:200px;
-}
-body { 
-    font: 12px arial;
-	width:500px;
-	height: 500px;
-	position: relative;
-}
-*/
 path {
     stroke-width: 3;
     fill: none;
@@ -76,17 +60,32 @@ div.tooltip {
 }
 
     </style>
-   <body>
+  </head>
+  <body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">Home Price Viz</a>
+    </div>
+    <ul class="nav navbar-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index2.html">Price History</a></li>
+        <li><a href="index3.html">Choropleth</a></li>
+        <li class="active"><a href="#">Interest Rate</a></li>
+    </ul>
+    </div>
+</nav>
+      <div id="viz2" class="container">
+      </div>
        <div class="container">
           <h2>Average Interest Rate for Mortgages</h2>
           <p>One of the factors that can influence the demand and price of housing is the affordability of a mortgage that most buyers would need to purchase property.  Data on all cash purchases is harder to come by, although Zillow's researchers have collected and created a <a href="https://www.zillow.com/research/top-markets-for-cash-purchases-9696/">visualization</a> about the percentages of cash buyers in local markets.  With a few notable exceptions the interest rates for a 30-year fixed mortgage have trended towards making homes more affordable.  This <a href="https://www.freddiemac.com/pmms/docs/30-yr_historics.xls">data</a> was taken from <a href="http://www.freddiemac.com">frediemac.com</a></p>
       </div>
-      <div id="viz2" class="container">
-      </div>
        <div>
            <ul class="pager">
-               <li class="previous"><a href="#">Previous</a></li>
-               <li class="next"><a href="#">Next</a></li>
+               <li class="previous"><a href="index3.html">Previous</a></li>
+               <li class="next"><a href="index.html">Next</a></li>
            </ul>
        </div>
       
@@ -220,7 +219,7 @@ d3.csv("data/30yrfixed.csv", function(error, data) {
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "22px")
-        .text("Mortgage Interest Rates");
+        .text("Mortgage Interest Rate");
 
 });
 </script>

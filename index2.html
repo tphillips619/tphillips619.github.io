@@ -19,23 +19,8 @@
     <script src="js/jquery.js"></script>
     <script src="js/bootstrap.min.js"></script>
 
-    <!--    <script src="https://d3js.org/d3-format.v1.min.js"></script> -->
     <style> 
-/*
-header {
-    <!--	font: 18px times; -->
-    width:960px;
-	height:200px;
-}
-*/
-/*
-body { 
-    font: 12px arial;
-	width:500px;
-	height: 500px;
-	position: relative;
-}
-*/
+
 path {
     stroke-width: 3;
     fill: none;
@@ -79,24 +64,36 @@ div.tooltip {
 
     </style>
    <body>
+       <nav class="navbar navbar-inverse">
+           <div class="container-fluid">
+               <div class="navbar-header">      
+                   <a class="navbar-brand" href="#">Home Price Viz</a>    
+               </div>    
+               <ul class="nav navbar-nav">      
+                   <li><a href="index.html">Home</a></li>      
+                   <li class="active"><a href="index2.html">Price History</a></li>      
+                   <li><a href="index3.html">Choropleth</a></li>      
+                   <li><a href="index4.html">Interest Rate</a></li>    
+               </ul>  
+           </div>
+       </nav>
+       <div id="viz" class="container">
+       </div>
        <div class="container">
           <h2>Price History</h2>
           <p>  The price history chart below displays the Zillow Home Value Index (ZHVI) price history for two bedroom units located in Zip Code 92610 and for the Orange County area. The <a href="http://files.zillowstatic.com/research/public/Zip/Zip_Zhvi_2bedroom.csv">data</a> provides median home prices over a 20 year period and allows the viewer to glean insights from the overall trend of home prices.  Price histories for Orange County and 92610 appear to have a similar shape for median house price, although the price histories for the county area look noticeable "smoother" as the data is averaged for more data points. According to Zillow's dataset for two bedroom units, median home prices in both areas have not climbed past their pre-recession peak in 2006. </p> 
           <p>The legend allows the viewer to select and unselect a price history.  Mouseover the priceline to see the exact values. </p>
-      </div>
-      <div id="viz" class="container">
-      </div>
+       </div>
        <div>
            <ul class="pager">
-               <li class="previous"><a href="#">Previous</a></li>
-               <li class="next"><a href="#">Next</a></li>
+               <li class="previous"><a href="index.html">Previous</a></li>
+               <li class="next"><a href="index3.html">Next</a></li>
            </ul>
        </div>
       
       <script>
 var margin = {top: 40, right: 120, bottom: 70, left: 80},
     width = 800 - margin.left - margin.right,
-//    width = 700 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("%Y-%m").parse;
@@ -166,9 +163,7 @@ d3.csv("data/data2.csv", function(error, data) {
     var color = d3.scale.category10();
 
     dataNest.forEach(function(d,i){
-
 //        console.log("d.key: " + d.key);
-
         svg.append("path")
             .attr("class","line")
             .style("stroke", function() {
@@ -209,8 +204,6 @@ d3.csv("data/data2.csv", function(error, data) {
 	                .duration(200)          
 	                .style("opacity", .9);          
 	            div.html(formatTime(d.date) + "<br/>"  + d3.format("$,")(d.price))
-//	            div.html(formatTime(d.date) + "<br/>"  + textThousandsFormat(d.price))   
-//                div.html(formatTime(d.date) + "<br/>"  + d.price)   
         	        .style("left", (d3.event.pageX) + "px")         
 	                .style("top", (d3.event.pageY - 28) + "px");    
         	    })                                  

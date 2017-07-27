@@ -1,73 +1,205 @@
 <!DOCTYPE html>
-<!-- Attempt at a choropleth for only California -->
 <meta charset="utf-8">
+<head>
+    <title>Forecast Change</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-
-.states {
-    fill: none;
-    stroke: #fff;
-    stroke-linejoin: round;
+path {
+        stroke-width: 3;
+        fill: none;
+}
+.axis path,
+.axis line {
+        fill: none;
+        stroke: grey;
+        stroke-width: 1;
+        shape-rendering: crispEdges;
+}
+/*
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    background: lightsteelblue;
+    color: #fff;
+    border-radius: 8px;
+}
+*/
+div.tooltip {
+        position: absolute;
+        text-align: center;
+        width: 140px;
+        height: 28px;
+        padding: 2px;
+        font: 12px sans-serif;
+        background: lightsteelblue;
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
 }
 
+.bar {
+        fill: steelblue;
+}
+.bar:hover {
+        fill: brown;
+}
+.axis--x path {
+        display: none;
+}
 </style>
-<body>
+
+<!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <script src="d3/d3.v3.min.js"></script>
-    <script src="d3/queue.v1.min.js"></script>
-    <script src="d3/topojson.v1.min.js"></script>
-    <script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Home Price Viz</a>
+      </div>
+      <ul class="nav navbar-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index2.html">Price History</a></li>
+        <li class="active"><a href="#">Forecast Change</a></li>
+        <li><a href="index4.html">Interest Rate</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div id="viz" class="container">
+  </div>
+  <div class="container">
+    <h2>Forecast Change</h2>
+    <p>A good indicator of the price movement for housing in specific geographic area is its proximity to other places with positive aspects.  The vizualition above uses bar charts to show Zillow's projected price change for housing in each city in Orange County.  All cities in Orange County are projected to have positive price changes over the next year.  Zillow's methodology for forecasting housing prices is explained in more detail <a href="https://www.zillow.com/research/zhvi-methodology-6032/">here</a>, and Zillow has launched a <a href="https://www.kaggle.com/c/zillow-prize-1">Kaggle competition</a> to improve its Zestimate algorithm. </p>
+    <p>Mouseover each bar to highlight each city's value</p> 
+    <ul class="pager">
+      <li class="previous"><a href="index2.html">Previous</a></li>
+      <li class="next"><a href="index4.html">Next</a></li>
+    </ul>
+  </div>
 
-var width = 960,
-    height = 500;
+<script>
 
-var color = d3.scale.threshold()
-    .domain([0.02, 0.04, 0.06, 0.08, 0.10])
-    .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
-// https://bost.ocks.org/mike/map/
+//var margin = {top: 40, right: 120, bottom: 70, left: 80},
+var margin = {top: 40, right: 120, bottom: 140, left: 80},
+    width = 800 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
-/*    
-var projection = d3.geo.albers()
-    .scale(100)
-    .translate([width/2, height/2]);
+//Add the svg canvas
+var svg = d3.select("#viz")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id", "barChartCanvas")
+    .append("g")
+        .attr("transform", 
+                "translate(" + margin.left + "," + margin.top + ")"); 
+
+var x = d3.scale.ordinal().rangeRoundBands([0, width]);
+var y = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+    
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10);
+
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+    
+    /* Tip V2
+//TipV2
+var tip = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0])
+    .html(function(d) {
+        return "<strong>Frequency:</strong> <span style='color:red'>" + d.frequency + "</span>";
+    })
+svg.call(tip);
 */
+d3.csv("data/citiesInOrangeCountyCA.csv", function(error, data) {
+    data.forEach(function(d) {
+    d.City = d.City;
+    d.Forecast = +d.Forecast;
+//    console.log("d.city: " + d.City);
+//    console.log("d.forecast: " + d.Forecast);
+    return d;
+});
 
-var path = d3.geo.path()//.projection(projection);
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-//d3.json(d3.json, "data/Californiatopo.json")
-
-
-queue()
-//    .defer(d3.json, "data/us.json")
-    .defer(d3.json, "data/geo/Californiatopo.json")
-    .defer(d3.tsv, "data/unemployment.tsv")
-    .await(ready);
-
-function ready(error, Californiatopo, unemployment) {
-    if (error) throw error;
-
-    var rateById = {};
-
-    unemployment.forEach(function(d) { rateById[d.id] = +d.rate; });
+    x.domain(data.map(function(d) { return d.City; }));
+//    y.domain([d3.min(data,function(d) { return d.Forecast;}), d3.max(data, function(d) { return d.Forecast; })]);
+    y.domain([0,d3.max(data, function(d) { return d.Forecast; })]);
 
     svg.append("g")
-        .attr("class", "counties")
-        .selectAll("path")
-//        .data(topojson.feature(us, us.objects.counties).features)
-        .data(topojson.feature(Californiatopo, Californiatopo.objects["California.geo"]).features)
-        .enter().append("path")
-        .attr("d", path)
-//        .style("fill", function(d) { return color(rateById[d.id]); });
-        .style("fill", "steelblue");
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+            .style("text-anchor", "end")
+//            .attr("dx", "-.8em")
+//            .attr("dy", "-.55em")
+            .attr("dx", "-0.5em")
+            .attr("dy", "-.22em")
+            .attr("transform", "rotate(-70)" );
+    
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0-(margin.left))
+            .attr("x",0 - (height / 2))
+            .attr("dy", "0.71em")
+            .attr("dy", "1em")
+            .attr("text-anchor", "middle")
+            .text("Zillow % YoY Forecast for Cities in Orange County");
+    
+    svg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return x(d.City); })
+            .attr("y", function(d) { return y(d.Forecast); })
+            .attr("width", x.rangeBand()-1)
+            .attr("height", function(d) { return height - y(d.Forecast); })
+//            .on("mouseover", tip.show)          
+//            .on("mouseout", tip.hide);
+            .on("mouseover", function(d) {          
+                div.transition()            
+                    .duration(200)          
+                    .style("opacity", .9);          
+                div.html(d.City + "<br/>"  + d3.format(".3r")(d.Forecast)+ "%")
+                    .style("left", (d3.event.pageX) + "px")         
+                    .style("top", (d3.event.pageY - 28) + "px");    
+            })                                  
+            .on("mouseout", function(d) {           
+                div.transition()            
+                    .duration(500)          
+                    .style("opacity", 0);   
+            });
 
-/*
-    svg.append("path")
-        .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
-        .attr("class", "states")
-        .attr("d", path);
-*/
-}
-    </script>
+    // Add the chart title
+    svg.append("text")
+        .attr("x", (width / 2))
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .style("font-size", "22px")
+        .text("Forecast Change in Price");
+});
+
+</script>
 </body>
