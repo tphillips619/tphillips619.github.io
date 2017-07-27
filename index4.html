@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang= "en">
   <head>
-    <title>Price History</title>
+    <title>Mortgage Interest Rate History</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 <!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -22,13 +22,11 @@
     <!--    <script src="https://d3js.org/d3-format.v1.min.js"></script> -->
     <style> 
 /*
-header {
-    <!--	font: 18px times; -->
+   header {
+    font: 18px times; 
     width:960px;
 	height:200px;
 }
-*/
-/*
 body { 
     font: 12px arial;
 	width:500px;
@@ -80,11 +78,10 @@ div.tooltip {
     </style>
    <body>
        <div class="container">
-          <h2>Price History</h2>
-          <p>  The price history chart below displays the Zillow Home Value Index (ZHVI) price history for two bedroom units located in Zip Code 92610 and for the Orange County area. The <a href="http://files.zillowstatic.com/research/public/Zip/Zip_Zhvi_2bedroom.csv">data</a> provides median home prices over a 20 year period and allows the viewer to glean insights from the overall trend of home prices.  Price histories for Orange County and 92610 appear to have a similar shape for median house price, although the price histories for the county area look noticeable "smoother" as the data is averaged for more data points. According to Zillow's dataset for two bedroom units, median home prices in both areas have not climbed past their pre-recession peak in 2006. </p> 
-          <p>The legend allows the viewer to select and unselect a price history.  Mouseover the priceline to see the exact values. </p>
+          <h2>Average Interest Rate for Mortgages</h2>
+          <p>One of the factors that can influence the demand and price of housing is the affordability of a mortgage that most buyers would need to purchase property.  Data on all cash purchases is harder to come by, although Zillow's researchers have collected and created a <a href="https://www.zillow.com/research/top-markets-for-cash-purchases-9696/">visualization</a> about the percentages of cash buyers in local markets.  With a few notable exceptions the interest rates for a 30-year fixed mortgage have trended towards making homes more affordable.  This <a href="https://www.freddiemac.com/pmms/docs/30-yr_historics.xls">data</a> was taken from <a href="http://www.freddiemac.com">frediemac.com</a></p>
       </div>
-      <div id="viz" class="container">
+      <div id="viz2" class="container">
       </div>
        <div>
            <ul class="pager">
@@ -96,11 +93,9 @@ div.tooltip {
       <script>
 var margin = {top: 40, right: 120, bottom: 70, left: 80},
     width = 800 - margin.left - margin.right,
-//    width = 700 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-var parseDate = d3.time.format("%Y-%m").parse;
-var formatTime = d3.time.format("%B %Y");
+var parseDate = d3.time.format("%Y-%m-%d").parse;
 
 var x = d3.time.scale().range([0, width]);
 var y = d3.scale.linear().range([height, 0]);
@@ -112,11 +107,13 @@ var yAxis = d3.svg.axis().scale(y)
     .orient("left").ticks(10);
 
 
-// Define the line
-var priceline = d3.svg.line()
-    .defined(function(d) { return d.price != 0; })        // Omits missing value instead of drawing it with value of 0 
+// Define the lines
+var rateline = d3.svg.line()
     .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.price); });
+    .y(function(d) { return y(d.rate); });
+var pointsline = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.points); });
 
 // Functions to add grid lines
 function make_x_axis() {
@@ -133,7 +130,7 @@ function make_y_axis() {
 }
   
 // Adds the svg canvas
-var svg = d3.select("#viz")
+var svg = d3.select("#viz2")
     .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -143,83 +140,44 @@ var svg = d3.select("#viz")
               "translate(" + margin.left + "," + margin.top + ")"); 
 
 // Get the data
-d3.csv("data/data2.csv", function(error, data) {
+d3.csv("data/30yrfixed.csv", function(error, data) {
     data.forEach(function(d) {
         d.date = parseDate(d.date);
-        d.price = +d.price
-        d.area= d.area;
+        d.rate = +d.rate;
+        d.points = +d.points;
     });
 
     // Scale the range of the data
     x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain([0, d3.max(data, function(d) { return d.price;})]);  
+    y.domain([0, d3.max(data, function(d) { return Math.max(d.rate, d.points);})]);
 
+    // Draw interest rate line
+    svg.append("path")
+        .attr("class","line")
+        .style("stroke","steelblue") 
+        .attr("d",rateline(data));
 
-    var dataNest = d3.nest()
-        .key(function(d) { return d.area;})
-        .entries(data);
+    // Draw points line
+    svg.append("path")
+        .attr("class","line")
+        .style("stroke","red") 
+        .attr("d",pointsline(data));
 
-    var div = d3.select("#viz").append("div")
-       	.attr("class", "tooltip")
-       	.style("opacity", 0);
+    // Add interest rate label
+    svg.append("text")
+        .attr("transform", "translate("+(width+3)+","+y(data[data.length-1].rate)+")")
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .style("fill", "steelblue")
+        .text("Interest Rate");
 
-    var color = d3.scale.category10();
-
-    dataNest.forEach(function(d,i){
-
-//        console.log("d.key: " + d.key);
-
-        svg.append("path")
-            .attr("class","line")
-            .style("stroke", function() {
-                return d.color = color(d.key); })
-            .attr("id", 'tag'+d.key.replace(/\s+/g, ''))
-            .attr("d",priceline(d.values));
-
-        // Add the Legend
-        svg.append("text")
-            .attr("x",width) 
-//            .attr("y", (height/3) + i*20)
-            .attr("y", margin.top + i*20)
-            .attr("class", "legend")
-            .style("fill", function() { 
-                return d.color = color(d.key); })
-            .on("click", function(){
-                // Determine if current line is visible
-                var active = d.active ? false : true,
-                newOpacity = active ? 0 : 1;
-                // Hide or show the elements based on the ID
-                d3.select("#tag"+d.key.replace(/\s+/g, '')) 
-                    .transition().duration(100)
-                    .style("opacity", newOpacity);
-                d.active = active;
-            })
-            .text(d.key);
-
-    	// Add the scatterplot (needed to sense mouseovers for tooltip)
-    	svg.selectAll("dot")
-            .data(data)
-        .enter().append("circle")
-           	.style("opacity", 0)                                                    
-	        .attr("r", 7)   //Can adjust how close to the line the mouse be in order to show tooltip    
-        	.attr("cx", function(d) { return x(d.date); })           
-	        .attr("cy", function(d) { return y(d.price); })         
-        	.on("mouseover", function(d) {          
-	            div.transition()            
-	                .duration(200)          
-	                .style("opacity", .9);          
-	            div.html(formatTime(d.date) + "<br/>"  + d3.format("$,")(d.price))
-//	            div.html(formatTime(d.date) + "<br/>"  + textThousandsFormat(d.price))   
-//                div.html(formatTime(d.date) + "<br/>"  + d.price)   
-        	        .style("left", (d3.event.pageX) + "px")         
-	                .style("top", (d3.event.pageY - 28) + "px");    
-        	    })                                  
-	        .on("mouseout", function(d) {           
-	            div.transition()            
-	                .duration(500)          
-	                .style("opacity", 0);   
-	        });
-    });
+    // Add points label
+    svg.append("text")
+        .attr("transform", "translate("+(width+3)+","+y(data[data.length-1].points)+")")
+        .attr("dy", ".35em")
+        .attr("text-anchor", "start")
+        .style("fill", "red")
+        .text("Points");
 
     // Add the X Axis
     svg.append("g")
@@ -234,7 +192,7 @@ d3.csv("data/data2.csv", function(error, data) {
         .attr("x",0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Median Price for 2 Bed Units");
+        .text("30-Year Fixed Interest Rate");
 
     // Add the Y Axis
     svg.append("g")
@@ -262,7 +220,7 @@ d3.csv("data/data2.csv", function(error, data) {
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
         .style("font-size", "22px")
-        .text("ZHVI Price History");
+        .text("Mortgage Interest Rates");
 
 });
 </script>
