@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Home Price</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="d3/d3.v3.min.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="index.html">Home Price Viz</a>
+    </div>
+    <ul class="nav navbar-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="index2.html">Price History</a></li>
+        <li><a href="index3.html">Interest Rate</a></li>
+        <li><a href="index4.html">Forecast Change</a></li>
+        <li class="active"><a href="#">About</a></li>
+    </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <h2>About This Visualization</h2>
+    <h4>Narrative Visualization Choice</h4>
+    <p> This visualization uses an Interactive Slideshow to implement its narrative.  Each scene follows an author defined sequence and contains elements that interact with the viewer.  Each scene has a Previous and Next button at the bottom of the page and a clearly selected order for the user to view the slides.
+    </p> 
+    <h4>Use of Scenes</h4>
+    <p> The visualization utilizes bootstrap.js to implement the pager buttons, navbar at the top, and for consistency with styles.  Elements such as tooltips that are not already specified in bootstrap, and are specified in the style section of the html header.  Each page follows a consistent layout consisting of a navbar at the top, fixed size visualization underneath, title, paragraph, and pager buttons at the bottom.  
+    </p> 
+    <h4>Use of Annotations</h4>
+    <p> The data used to generate each line graph contains between 220 and 2200 (x,y) pairs and interactive tooltips allow the viewer to investigate the line at each point. Tooltips for bar charts on the forecast page where done with mouseover events directly over the rectangle HTML objects.  Tooltips for the line charts were more complicated and involved creating an invisible scatterplot of circles imposed over the SVG line.  Each circle element was connected to the data and assigned a mouseover and mouseout event that changed the opacity of the HTML div that framed the tooltip.
+    </p> 
+    <h4>Use of Parameters</h4>
+    <p> The price history graph includes legend click button to show or hide each line. A click changes the state of the line by toggling the opacity parameter which persists until the text is clicked again.
+    </p> 
+    <h4>Use of Triggers</h4>
+    <p> Mouseover and mouseout events trigger the show and hide functions for the tooltip.  The price history graph includes an .on(click) function that toggles the visibility of individual lines.
+    </p> 
+    <h4>Data Sources</h4>
+    <ul>
+        <li> Price History: <a href="https://www.zillow.com/research/data/">Zillow</a> ZHVI 2-Bedroom Time Series ($) </li>
+        <li> Interest Rate: <a href="https://www.freddiemac.com/">Freddie Mac</a> <a href="www.freddiemac.com/pmms/docs/30-yr_historics.xls">30-yr_historics.xls</a> </li>
+        <li> Forecast Change: <a href="">Zillow</a> Home Value Forecast for <a href="http://files.zillowstatic.com/research/public/AllRegionsForePublic.csv">all regions</a></li>
+    </ul> 
+    <h4>Credit</h4>
+    <ul>
+        <li> <a href="https://d3js.org/">D3.js</a> and all of the usefull examples in the <a href="https://github.com/d3/d3/wiki/gallery">Gallery</a></li>
+        <li> <a href="https://getbootstrap.com/">bootstrap.js</a></li>
+        <li> <a href="https://leanpub.com/D3-Tips-and-Tricks/">D3-Tips-and-Tricks</a></li>
+    </ul>
+  <ul class="pager">
+    <li class="previous"><a href="index4.html">Previous</a></li>
+    <li class="next"><a href="index.html">Next</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

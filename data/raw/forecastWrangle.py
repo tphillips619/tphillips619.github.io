@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 ## Finds all cities in Orange County and creates .csv
 # CityName,ForecastPctChange
 # Irvine,0.5
@@ -64,5 +65,7 @@ w = open(OUTFILENAME, 'w')
 for line in csvData:
     print line
     w.write(line + '\n')
+
+w.close()
 
 w.close()
