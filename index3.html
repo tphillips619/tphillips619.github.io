@@ -16,17 +16,6 @@ path {
         stroke-width: 1;
         shape-rendering: crispEdges;
 }
-/*
-.d3-tip {
-    line-height: 1;
-    font-weight: bold;
-    padding: 2px;
-    background: rgba(0, 0, 0, 0.8);
-    background: lightsteelblue;
-    color: #fff;
-    border-radius: 8px;
-}
-*/
 div.tooltip {
         position: absolute;
         text-align: center;
@@ -121,22 +110,10 @@ var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
     
-    /* Tip V2
-//TipV2
-var tip = d3.tip()
-    .attr('class', 'd3-tip')
-    .offset([-10, 0])
-    .html(function(d) {
-        return "<strong>Frequency:</strong> <span style='color:red'>" + d.frequency + "</span>";
-    })
-svg.call(tip);
-*/
 d3.csv("data/citiesInOrangeCountyCA.csv", function(error, data) {
     data.forEach(function(d) {
     d.City = d.City;
     d.Forecast = +d.Forecast;
-//    console.log("d.city: " + d.City);
-//    console.log("d.forecast: " + d.Forecast);
     return d;
 });
 
@@ -150,8 +127,6 @@ d3.csv("data/citiesInOrangeCountyCA.csv", function(error, data) {
         .call(xAxis)
         .selectAll("text")
             .style("text-anchor", "end")
-//            .attr("dx", "-.8em")
-//            .attr("dy", "-.55em")
             .attr("dx", "-0.5em")
             .attr("dy", "-.22em")
             .attr("transform", "rotate(-70)" );
@@ -173,11 +148,25 @@ d3.csv("data/citiesInOrangeCountyCA.csv", function(error, data) {
         .enter().append("rect")
             .attr("class", "bar")
             .attr("x", function(d) { return x(d.City); })
-            .attr("y", function(d) { return y(d.Forecast); })
+//            .attr("y", function(d) { return y(d.Forecast); })
+            .attr("y", function(d) { return height;})
             .attr("width", x.rangeBand()-1)
-            .attr("height", function(d) { return height - y(d.Forecast); })
-//            .on("mouseover", tip.show)          
-//            .on("mouseout", tip.hide);
+//            .attr("height", function(d) { return height - y(d.Forecast); })
+            .attr("height", 0)
+            .transition()
+            .duration(200)
+            .delay(function (d, i) {
+                return i * 50;
+            })
+            .attr("y", function (d) {
+                return y(d.Forecast);
+            })
+            .attr("height", function (d, i) {
+                return height - y(d.Forecast);
+            });
+
+
+    svg.selectAll(".bar")
             .on("mouseover", function(d) {          
                 div.transition()            
                     .duration(200)          
