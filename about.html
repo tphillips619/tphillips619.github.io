@@ -45,10 +45,10 @@
     <p> The data used to generate each line graph contains between 220 and 2200 (x,y) pairs and interactive tooltips allow the viewer to investigate the line at each point. Tooltips for bar charts on the forecast page where done with mouseover events directly over the rectangle HTML objects.  Tooltips for the line charts were more complicated and involved creating an invisible scatterplot of circles imposed over the SVG line.  Each circle element was connected to the data and assigned a mouseover and mouseout event that changed the opacity of the HTML div that framed the tooltip.
     </p> 
     <h4>Use of Parameters</h4>
-    <p> The price history graph includes legend click button to show or hide each line. A click changes the state of the line by toggling the opacity parameter which persists until the text is clicked again.
+    <p> The price history graph includes a legend click button to show or hide each line. A click changes the state of the line by toggling the opacity parameter which persists until the text is clicked again.
     </p> 
     <h4>Use of Triggers</h4>
-    <p> Mouseover and mouseout events trigger the show and hide functions for the tooltip.  The price history graph includes an .on(click) function that toggles the visibility of individual lines.
+    <p> Mouseover and mouseout events trigger the show and hide functions for the tooltip.  The price history graph includes an on click function that toggles the visibility of individual lines.
     </p> 
     <h4>Data Sources</h4>
     <ul>
