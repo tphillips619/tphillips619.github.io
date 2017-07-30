@@ -36,7 +36,7 @@
 <div class="container">
     <h2>About This Visualization</h2>
     <h4>Narrative Visualization Choice</h4>
-    <p> This visualization uses an Interactive Slideshow to implement its narrative.  Each scene follows an author defined sequence and contains elements that interact with the viewer.  Each scene has a Previous and Next button at the bottom of the page and a clearly selected order for the user to view the slides.
+    <p> This visualization uses an Interactive Slideshow to implement its narrative.  Each scene follows an author defined sequence and contains elements that interact with the viewer.  Each scene has a Previous and Next button at the bottom of the page and a clearly selected order for the user to view the slides.  Boostrap.js also provides an active class that highlights the associated navbar object which orients the viewer to their position in the sequence of scenes. 
     </p> 
     <h4>Use of Scenes</h4>
     <p> The visualization utilizes bootstrap.js to implement the pager buttons, navbar at the top, and for consistency with CSS.  Elements (such as tooltips) that are not already specified in bootstrap are specified in the style section of the html header.  Each page follows a consistent layout consisting of a navbar at the top, fixed size visualization underneath, title, paragraph, and pager buttons at the bottom.  
@@ -45,10 +45,10 @@
     <p> The data used to generate each line graph contains between 220 and 2200 (x,y) pairs and interactive tooltips allow the viewer to investigate the line at each point. Tooltips for bar charts on the forecast page where done with mouseover events directly over the rectangle HTML objects.  Tooltips for the line charts were more complicated and involved creating an invisible scatterplot of circles imposed over the SVG line.  Each circle element was connected to the data and assigned a mouseover and mouseout event that changed the opacity of the HTML div that framed the tooltip.
     </p> 
     <h4>Use of Parameters</h4>
-    <p> The price history graph includes a legend click button to show or hide each line. A click changes the state of the line by toggling the opacity parameter which persists until the text is clicked again.
+    <p> With multiple lines sharing the same canvas and similar y values, it can be challenging for the user to determine what the value is for each line.  The price history graph includes a legend which can be clicked to show or hide each line. A click changes the state of the line by toggling the opacity parameter which persists until the text is clicked again.  In order to display a tooltip box next to the data point it is annotating, the HTML div element uses the data value's (x,y) coordinates to set its position.
     </p> 
     <h4>Use of Triggers</h4>
-    <p> Mouseover and mouseout events trigger the show and hide functions for the tooltip.  The price history graph includes an on click function that toggles the visibility of individual lines.
+    <p> Mouseover and mouseout events trigger the show and hide functions for the tooltip.  The price history graph includes an on click function that toggles the visibility of individual lines. Text at the bottom of each page makes the viewer aware of these events.
     </p> 
     <h4>Data Sources</h4>
     <ul>
