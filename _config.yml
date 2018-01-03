@@ -1,1 +1,24 @@
-theme: jekyll-theme-architect
+title: Notebook Portfolio 
+author: Tom Phillips
+email: thomasp3@illinois.edu 
+description: > # this means to ignore newlines until "baseurl:"
+  A collection of notebooks on data science projects 
+
+github_username: tphillips619 
+
+# Minima date format
+# refer to http://shopify.github.io/liquid/filters/date/ if you want to customize this
+minima:
+  date_format: "%b %-d, %Y"
+
+# If you want to link only specific pages in your header, uncomment
+# this and add the path to the pages in order as they should show up
+#header_pages:
+# - about.html
+
+# Build settings
+markdown: kramdown
+theme: minima
+exclude:
+  - Gemfile
+  - Gemfile.lock
