@@ -1,8 +1,8 @@
 title: Notebook Portfolio 
-author: Tom Phillips
+author: Tom Phillips	 
 email: thomasp3@illinois.edu 
-description: > # this means to ignore newlines until "baseurl:"
-  A collection of notebooks on data science projects 
+description: A collection of notebooks on data science projects
+   
 
 github_username: tphillips619 
 
