@@ -135,7 +135,47 @@ p > code,
 .si { color: $strings } /* Literal.String.Interpol */
 .sx { color: $strings } /* Literal.String.Other */
 .sr { color: $strings } /* Literal.String.Regex */
-.s1 { color: $strings } /* Literal.String.Single */
+.pre::-webkit-scrollbar-thumb {
+    background-color: #555;
+    @include rounded(4px);
+}
+::selection {
+    background-color: $selectionBackground;
+    color: $selectionForeground;
+}
+
+// Hiding links after h1...h6 objects, and displaying only on hover
+a.anchor-link:link {
+    text-decoration: none;
+    padding: 0 20px;
+    visibility: hidden
+}
+h1:hover .anchor-link,
+h2:hover .anchor-link,
+h3:hover .anchor-link,
+h4:hover .anchor-link,
+h5:hover .anchor-link,
+h6:hover .anchor-link {
+    visibility: visible
+}
+
+// Change color of input and output feilds to make them stand out
+div.input_prompt {
+    color: #303F9F;
+}
+div.output_prompt {
+    color: #D84315;
+}
+
+// Keeping output_subareas within the wrapper div
+div.output_subarea{
+    overflow-x: auto;
+    padding: 0.4em;
+    -moz-box-flex: 1;
+    flex: 1;
+    max-width: 100%; // calc(100% - 14ex);
+}
+s1 { color: $strings } /* Literal.String.Single */
 .ss { color: $strings } /* Literal.String.Symbol */
 .bp { color: $varAndProp  } /* Name.Builtin.Pseudo */
 .vc { color: $varAndProp } /* Name.Variable.Class */
@@ -151,8 +191,8 @@ p > code,
 
 
 
-// Code targeting Jupyter-Notebooks
-// Selects code from 'Out' blocks
+
+// Apply similar styles to text within  div.output_text (e.g. 'Out' blocks)
 pre {
   position: relative;
   margin: 0;
@@ -168,13 +208,27 @@ pre {
     color: #ddd;
   }
 }
+pre::-webkit-scrollbar {
+    height: 10px;
+    background-color: #34362e;
+    border-radius: 0 0 4px 4px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background-color: #555;
+    @include rounded(4px);
+}
+::selection {
+    background-color: $selectionBackground;
+    color: $selectionForeground;
+}
+
+// Hiding links after h1...h6 objects, and displaying only on hover
 a.anchor-link:link {
     text-decoration: none;
     padding: 0 20px;
     visibility: hidden
 }
-
-// Getting rid of visible links after h1...h6 objects 
 h1:hover .anchor-link,
 h2:hover .anchor-link,
 h3:hover .anchor-link,
@@ -186,10 +240,17 @@ h6:hover .anchor-link {
 
 // Change color of input and output feilds to make them stand out
 div.input_prompt {
-    color: firebrick;
+    color: #303F9F;
 }
-
 div.output_prompt {
-    color: firebrick;
+    color: #D84315;
 }
 
+// Keeping output_subareas within the wrapper div
+div.output_subarea{
+    overflow-x: auto;
+    padding: 0.4em;
+    -moz-box-flex: 1;
+    flex: 1;
+    max-width: 100%; // calc(100% - 14ex);
+}

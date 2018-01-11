@@ -376,7 +376,15 @@ nav.shrink .navbar-toggle {
   }
 }
 
-// https://nipunbatra.github.io/blog/2017/Jupyter-powered-blog.html 
+
+
+
+/*
+ * Code targeting Jupyter-Notebooks
+ *
+ */
+
+// Add padding to tables (e.g. dataframes in output) and add accent-color on hover
 th,
 td {
     padding: 8px;
