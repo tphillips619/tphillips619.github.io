@@ -4,10 +4,7 @@ title: About
 
 ---
 
-# About
-
-I wanted a space to post projects I've worked on. 
-
+# Credit 
 
 This page was built using the theme [Jekyll Clean Dark](https://github.com/streetturtle/jekyll-clean-dark) &copy; by [Pavel Makhov](http://pavelmakhov.com)
 
