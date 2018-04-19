@@ -1,7 +1,7 @@
 # Jekyll configuration
 
-name: Tom Phillips Project Portfolio 
-description: Notebooks and data science projects 
+name: Project Portfolio 
+description: Notebooks and Data Science Projects 
  
 # Url is currently only used only for the RSS feed in feed.xml
 url: https://tphillips619.github.io
