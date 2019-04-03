@@ -5,7 +5,6 @@ tags:
  - Pi
  - NumPy
  - jupyter-notebook
- - procrastination
 description: Using the Monte Carlo method to estimate Pi
 toc: true
 ---
@@ -34,7 +33,7 @@ toc: true
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We know the formula for calculating the area of a circle is $\Pi r^2$.  If we didn't know the value of $\Pi$, but know its formula, we can estimate it using a Monte Carlo method and repeatedly sample random numbers to generate observations that can be plugged back into our known formula.</p>
+<p>We know the formula for calculating the area of a circle is Pi * r^2.  If we didn't know the value of Pi, but knew its formula, we could estimate Pi using a Monte Carlo method and repeatedly sample random numbers that can be plugged back into our known formula.</p>
 </div>
 </div>
 </div>
@@ -56,7 +55,7 @@ toc: true
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Given r=1, the area of a circle must be $\Pi$.  When $x^2 + y^2 = 1$, the point would fall on the circumference of the circle. When $x^2 + y^2 &lt; 1$, these values would fall within the area of the circle.</p>
+<p>Given r=1, the area of a circle must be Pi.  When x^2 + y^2 = 1, the point would fall on the circumference of the circle. When x^2 + y^2 is less than 1, these values would fall within the area of the circle.</p>
 </div>
 </div>
 </div>
@@ -75,7 +74,7 @@ toc: true
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>When we count the number of points within the circle and divide this by total number of points, we can obtain our estimate, $\hat{\Pi}$</p>
+<p>When we count the number of points within the circle and divide this by total number of points, we can obtain our estimate of Pi</p>
 </div>
 </div>
 </div>
@@ -105,7 +104,7 @@ toc: true
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This number is not $\Pi$, and plotting x and y should help explain why.</p>
+<p>This number is not Pi, and plotting x and y with matplotlib should help explain why.</p>
 </div>
 </div>
 </div>
@@ -142,7 +141,7 @@ toc: true
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The range of values we used to generate our observations were between 0 and 1.</p>
-<p>If we change the range of the points to numbers between -1 and 1, we should get $\hat{\Pi}$.  We can reuse our x and y arrays and center data by subtracting 0.5.  Then scale the data back so that r=1 and the points range between (-1,1) by multiplying it by 2.</p>
+<p>If we change the range of the points to numbers between -1 and 1, we should get our estimate of Pi.  We can reuse our x and y arrays and center data by subtracting 0.5.  Then scale the data back so that r=1 and the points range between (-1,1) by multiplying it by 2.</p>
 </div>
 </div>
 </div>
@@ -184,7 +183,7 @@ toc: true
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This figure has a radius of 1, an area of $\Pi$, and explains what we were estimating in the first plot.  When we used numbers between (0,1), we were only estimating observations in Quadrant 1.</p>
+<p>This figure has a radius of 1, an area of Pi, and explains what we were estimating in the first plot.  When we used numbers between (0,1), we were only estimating observations in Quadrant 1.</p>
 </div>
 </div>
 </div>
@@ -213,7 +212,7 @@ toc: true
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>When multiplying the the result by 4, we obtain $\hat{\Pi}$ plus or minus error ($\pm \epsilon$)</p>
+<p>When multiplying the the result by 4, we obtain our estimate of Pi plus or minus some error</p>
 </div>
 </div>
 </div>
