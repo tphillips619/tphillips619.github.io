@@ -17,5 +17,3 @@ There are a few collisions in style elements that prevent users from getting bot
 > jupyter nbconvert --to html --template basic 2018-01-01-my-notebook.ipynb
 
 Then add style elements present in theme.scss and syntax.scss in the /assets/css folder.  Add the front matter into the resulting html file and make sure that any meaningful tag you use to categorize your post is also present in the /tags/ folder.
-
-My notebook source is located in my project repository on my [GitHub page](https://github.com/tphillips619/)

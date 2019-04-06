@@ -1,0 +1,657 @@
+---
+layout: post
+title: Data Integration with Fuzzy Matching
+tags:
+ - integration
+ - regex
+ - fuzzy-matching
+ - jupyter-notebook
+description: "Combining REGEX and the Levenshtein distance to integrate records with syntax-level variations"
+toc: true
+---
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Data-Integration-With-Fuzzy-Matching">Data Integration With Fuzzy Matching<a class="anchor-link" href="#Data-Integration-With-Fuzzy-Matching">¶</a></h1><p>The value of a dataset can increase dramatically when it is combined with data from a different source.
+Integrating data from disparate sources comes with its own challenges.  Often the values of fields in the mediating schema for the two different datasets have subtle differences that make integration a long and arduous process.</p>
+<p>Merging two datasets by their address is one example of this.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">fuzzywuzzy</span> <span class="kn">import</span> <span class="n">fuzz</span>
+<span class="kn">import</span> <span class="nn">re</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">example_addresses</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'cannonical_list'</span><span class="p">:</span>
+                     <span class="p">[</span><span class="s1">'2752 Cherry'</span><span class="p">,</span> <span class="s1">'61 Low Street 70'</span><span class="p">,</span> <span class="s1">'9813 North 4th Street'</span><span class="p">,</span>
+                      <span class="s1">'792 E Lane Avenue'</span><span class="p">,</span> <span class="s1">'78 Summit St'</span><span class="p">],</span>
+                     <span class="s1">'entropic_list'</span><span class="p">:</span>
+                     <span class="p">[</span><span class="s1">'2752 Cherry Ave'</span><span class="p">,</span> <span class="s1">'61 Low St #70'</span><span class="p">,</span> <span class="s1">'9813 N 4th'</span><span class="p">,</span>
+                      <span class="s1">'792 East Lane Ave'</span><span class="p">,</span> <span class="s1">'78 Summit St.'</span><span class="p">]</span>
+                    <span class="p">})</span>
+<span class="n">example_addresses</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[2]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>cannonical_list</th>
+<th>entropic_list</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>2752 Cherry</td>
+<td>2752 Cherry Ave</td>
+</tr>
+<tr>
+<th>1</th>
+<td>61 Low Street 70</td>
+<td>61 Low St #70</td>
+</tr>
+<tr>
+<th>2</th>
+<td>9813 North 4th Street</td>
+<td>9813 N 4th</td>
+</tr>
+<tr>
+<th>3</th>
+<td>792 E Lane Avenue</td>
+<td>792 East Lane Ave</td>
+</tr>
+<tr>
+<th>4</th>
+<td>78 Summit St</td>
+<td>78 Summit St.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>An address string can exist in different states, but still refer to the same entity.  These records would remain unmatched when their tables are merged on the address string.</p>
+<p>There are 3 general approaches to successfully integrating these mismatched records.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Approach-1">Approach 1<a class="anchor-link" href="#Approach-1">¶</a></h1><h2 id="Inspection-of-All-Records">Inspection of All Records<a class="anchor-link" href="#Inspection-of-All-Records">¶</a></h2><p>Address matching is an example of a task that can be done quickly and effortless by humans. When tasks are too repetitive and monotonous, even the most diligent humans will begin to make mistakes.  When recruiting or crowdsourcing a merging task, resources have to be spent on performing the merge as well as developing a process to ensure that the delegated task was completed with precision.  Inspections of all records can be resourse intensive and there are some cases where the resulting data product can loose value because the process takes too long to complete.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Approach-2">Approach 2<a class="anchor-link" href="#Approach-2">¶</a></h1><h2 id="Explicit-Pattern-Matching-with-RegEx">Explicit Pattern Matching with RegEx<a class="anchor-link" href="#Explicit-Pattern-Matching-with-RegEx">¶</a></h2><p>A second approach involves attempting to automate the process by explicitly defining rules that are capable of matching address strings with Regular Expressions (RegEx).  This process involves developing rulesets that are based on a set or records you can see, applying the rules to a set of records you haven't seen, and inspecting the results.  In the case of address matching, there will inevitably be  abbreviations, insertions, deletions, typos, and other variations.  RegEx is an indispensible tool for specifying patterns, but this process is painfully explicit and the resulting ruleset can quickly grow to be too large and complicated to be maintained while still being easily broken by new records with unconventional or mystifying variations.</p>
+<p>RegEx patterns are great at extending the boundaries between known variations, but I'm my experience they do poorly when they are used to specify boundaries between entities with a high degree of entropy.  The problem is not a limitation in RegEx's flexibility in specifying patterns, but an inability of a RegEx author to imagine all of the possible entropic states that an entity can assume.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Approach-3">Approach 3<a class="anchor-link" href="#Approach-3">¶</a></h1><h2 id="Ranking-Matches-With-the-Fuzzy-Matching">Ranking Matches With the Fuzzy Matching<a class="anchor-link" href="#Ranking-Matches-With-the-Fuzzy-Matching">¶</a></h2><p>A third approach is to combine Approach 1 and Approach 2, and utilize fuzzy matching to rank potential matches.  Then a human can inspect records that are close to a decision boundary. This hybrid approach is most effective when the list of possible matches is pruned.</p>
+<h3 id="1)-Partition-the-Search-Space">1) Partition the Search Space<a class="anchor-link" href="#1)-Partition-the-Search-Space">¶</a></h3><p>Often there is data available in, or around, each record that can provide clues about the kinds of matches you are likely to find within each subset.  Great candidates of attributes to explore include any attributes that describe:</p>
+<pre><code>- membership to a category
+- physical location
+- the time that an event occured
+
+</code></pre>
+<p>Depending on the type of data that need to be integrated, there are likely other datapoints that creative interns can use to glean information about the unmerged records and generate a list of cannonical strings that are likely to be contained in any specific subset of unmerged records.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="2)-Craft-a-Simple-and-Irreducible--RegEx-Pattern">2) Craft a Simple and Irreducible  RegEx Pattern<a class="anchor-link" href="#2)-Craft-a-Simple-and-Irreducible--RegEx-Pattern">¶</a></h3><p>In order for a package to be delivered to an address, it must have a house number and a street name. The street name portion of the string can have variations and still be the same address (e.g. '2752 Cherry' and '2752 Cherry Ave'), but the number portion of the address string must be an exact match (e.g. '2752 Cherry' and '2753 Cherry' are no longer the same address).</p>
+<p>A successful match requires an exact match for the leading digits of the address string, but should have some tolerance for mismatch in the characters that follow the leading digits.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">re_address_digits</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">'^\d+'</span><span class="p">)</span>
+<span class="n">re_address_strings</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">'\d+((\s\S+){1,4})'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">extract_regex</span><span class="p">(</span><span class="n">list_of_strings</span><span class="p">,</span> <span class="n">compiled_regex</span><span class="p">,</span> <span class="n">get_group</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">return_list</span> <span class="o">=</span> <span class="p">[]</span>    
+
+    <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="n">list_of_strings</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">compiled_regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">return_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">get_group</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="n">return_list</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">example_addresses</span><span class="p">[</span><span class="s1">'cannonical_digits'</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_regex</span><span class="p">(</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'cannonical_list'</span><span class="p">],</span> 
+                                                       <span class="n">re_address_digits</span><span class="p">)</span>
+
+<span class="n">example_addresses</span><span class="p">[</span><span class="s1">'entropic_digits'</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_regex</span><span class="p">(</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'entropic_list'</span><span class="p">],</span> 
+                                                     <span class="n">re_address_digits</span><span class="p">)</span>
+
+<span class="n">example_addresses</span><span class="p">[</span><span class="s1">'digit_match'</span><span class="p">]</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'cannonical_digits'</span><span class="p">]</span> <span class="o">==</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'entropic_digits'</span><span class="p">]</span>
+
+
+<span class="n">example_addresses</span><span class="p">[</span><span class="s1">'cannonical_strings'</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_regex</span><span class="p">(</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'cannonical_list'</span><span class="p">],</span>
+                                                        <span class="n">re_address_strings</span><span class="p">,</span> <span class="n">get_group</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">example_addresses</span><span class="p">[</span><span class="s1">'entropic_strings'</span><span class="p">]</span> <span class="o">=</span> <span class="n">extract_regex</span><span class="p">(</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'entropic_list'</span><span class="p">],</span> 
+                                                      <span class="n">re_address_strings</span><span class="p">,</span> <span class="n">get_group</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">example_addresses</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>cannonical_list</th>
+<th>entropic_list</th>
+<th>cannonical_digits</th>
+<th>entropic_digits</th>
+<th>digit_match</th>
+<th>cannonical_strings</th>
+<th>entropic_strings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>2752 Cherry</td>
+<td>2752 Cherry Ave</td>
+<td>2752</td>
+<td>2752</td>
+<td>True</td>
+<td>Cherry</td>
+<td>Cherry Ave</td>
+</tr>
+<tr>
+<th>1</th>
+<td>61 Low Street 70</td>
+<td>61 Low St #70</td>
+<td>61</td>
+<td>61</td>
+<td>True</td>
+<td>Low Street 70</td>
+<td>Low St #70</td>
+</tr>
+<tr>
+<th>2</th>
+<td>9813 North 4th Street</td>
+<td>9813 N 4th</td>
+<td>9813</td>
+<td>9813</td>
+<td>True</td>
+<td>North 4th Street</td>
+<td>N 4th</td>
+</tr>
+<tr>
+<th>3</th>
+<td>792 E Lane Avenue</td>
+<td>792 East Lane Ave</td>
+<td>792</td>
+<td>792</td>
+<td>True</td>
+<td>E Lane Avenue</td>
+<td>East Lane Ave</td>
+</tr>
+<tr>
+<th>4</th>
+<td>78 Summit St</td>
+<td>78 Summit St.</td>
+<td>78</td>
+<td>78</td>
+<td>True</td>
+<td>Summit St</td>
+<td>Summit St.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="3)-Ranking-the-Subtring-Match-with-the-Levenshtein-Distance">3) Ranking the Subtring Match with the Levenshtein Distance<a class="anchor-link" href="#3)-Ranking-the-Subtring-Match-with-the-Levenshtein-Distance">¶</a></h2><p>The Levenshtein distance is the minimum number of insertions, deletions, and replacements that need to be made in order to turn one string into a second string. <a href="https://github.com/seatgeek/fuzzywuzzy">FuzzyWuzzy</a> is a liberally licensed library for calculating the Levenstein distance between two strings. I've used the <a href="https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/#partial-string-similarity">partial string similarity</a> so that that similarity ratio is calculated from the length of the shorter of the two strings.</p>
+<p>By computing the Levenshtein distance between a string on the entropic_list and all address strings in the cannonical_list and then recording the best match, it is no longer necessary to create an explicit ruleset for translating 'Northeast' to 'NE', 'Lane' and 'Ln', or any of the other infinite number of possible variations that the an address string can take on.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">find_best_match</span><span class="p">(</span><span class="n">cannonical_strings</span><span class="p">,</span> <span class="n">long_fuzzy_string</span><span class="p">):</span>
+    <span class="sd">""" Returns a tuple (cannonical_string, best_match_score)"""</span>
+    
+    <span class="n">best_match_score</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="n">cannonical_strings</span><span class="p">:</span>
+        <span class="n">match_score</span> <span class="o">=</span> <span class="n">fuzz</span><span class="o">.</span><span class="n">partial_ratio</span><span class="p">(</span><span class="n">long_fuzzy_string</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match_score</span> <span class="o">&gt;</span> <span class="n">best_match_score</span><span class="p">:</span>
+            <span class="n">best_match_score</span> <span class="o">=</span> <span class="n">match_score</span>
+            <span class="n">best_match</span> <span class="o">=</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span><span class="n">best_match_score</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="n">best_match</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">example_addresses</span><span class="p">[</span><span class="s1">'best_match'</span><span class="p">]</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'entropic_strings'</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">find_best_match</span><span class="p">(</span><span class="n">example_addresses</span><span class="p">[</span><span class="s1">'cannonical_strings'</span><span class="p">],</span> <span class="n">x</span><span class="p">))</span>
+<span class="n">example_addresses</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>cannonical_list</th>
+<th>entropic_list</th>
+<th>cannonical_digits</th>
+<th>entropic_digits</th>
+<th>digit_match</th>
+<th>cannonical_strings</th>
+<th>entropic_strings</th>
+<th>best_match</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>2752 Cherry</td>
+<td>2752 Cherry Ave</td>
+<td>2752</td>
+<td>2752</td>
+<td>True</td>
+<td>Cherry</td>
+<td>Cherry Ave</td>
+<td>( Cherry, 100)</td>
+</tr>
+<tr>
+<th>1</th>
+<td>61 Low Street 70</td>
+<td>61 Low St #70</td>
+<td>61</td>
+<td>61</td>
+<td>True</td>
+<td>Low Street 70</td>
+<td>Low St #70</td>
+<td>( Low Street 70, 64)</td>
+</tr>
+<tr>
+<th>2</th>
+<td>9813 North 4th Street</td>
+<td>9813 N 4th</td>
+<td>9813</td>
+<td>9813</td>
+<td>True</td>
+<td>North 4th Street</td>
+<td>N 4th</td>
+<td>( North 4th Street, 67)</td>
+</tr>
+<tr>
+<th>3</th>
+<td>792 E Lane Avenue</td>
+<td>792 East Lane Ave</td>
+<td>792</td>
+<td>792</td>
+<td>True</td>
+<td>E Lane Avenue</td>
+<td>East Lane Ave</td>
+<td>( E Lane Avenue, 79)</td>
+</tr>
+<tr>
+<th>4</th>
+<td>78 Summit St</td>
+<td>78 Summit St.</td>
+<td>78</td>
+<td>78</td>
+<td>True</td>
+<td>Summit St</td>
+<td>Summit St.</td>
+<td>( Summit St, 100)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="4)-Approximate-a-Decision-Boundary">4) Approximate a Decision Boundary<a class="anchor-link" href="#4)-Approximate-a-Decision-Boundary">¶</a></h2><p>The distribution of potential matches between every entropic_string and its closest match on the list of cannonical_strings may look like the following.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">fuzzy_matching_histograms</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[9]:</div>
+<div class="output_png output_subarea output_execute_result">
+<img src="data:image/png;base64,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
+"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The next step is to specify a decision boundary where the best_match score is no longer correctly identifying matches.  This boundary (marked in red above) is not exact; there is no line than can separate all matches from mismatches. This boundary is only an approximation of the center of the set of records that were mismatched.</p>
+<p>Match scores to the right of the boundary contain True Positives (TP) and False Positives(FP).  Match scores to the left of the boundary contain True Negatives (TN) and False Negatives (FN).</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="5)-Inspect-Results-on-Both-Sides">5) Inspect Results on Both Sides<a class="anchor-link" href="#5)-Inspect-Results-on-Both-Sides">¶</a></h2><p>By ranking the matches with the edit distance a human can start inspecting records. A list that contains the False Positive matches is created by selecting matches with a match score &gt; boundary and sorting the records in ascending order of match score.  Conversely, the list of records with match scores &lt;= the boundary and sorted in descending order of match score contain False Negatives.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">decision_boundary</span> <span class="o">=</span> <span class="mi">66</span>
+
+<span class="n">example_addresses</span><span class="p">[</span><span class="s1">'match_score'</span><span class="p">]</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'best_match'</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">FP_idx</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'match_score'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">decision_boundary</span>
+<span class="n">FN_idx</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="p">[</span><span class="s1">'match_score'</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">decision_boundary</span>
+<span class="n">inspection_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'cannonical_list'</span><span class="p">,</span><span class="s1">'entropic_list'</span><span class="p">,</span><span class="s1">'best_match'</span><span class="p">,</span> <span class="s1">'match_score'</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">FP_ranked</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">FP_idx</span><span class="p">,</span> <span class="n">inspection_columns</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'match_score'</span><span class="p">)</span>
+<span class="n">FP_ranked</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>cannonical_list</th>
+<th>entropic_list</th>
+<th>best_match</th>
+<th>match_score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>2</th>
+<td>9813 North 4th Street</td>
+<td>9813 N 4th</td>
+<td>( North 4th Street, 67)</td>
+<td>67</td>
+</tr>
+<tr>
+<th>3</th>
+<td>792 E Lane Avenue</td>
+<td>792 East Lane Ave</td>
+<td>( E Lane Avenue, 79)</td>
+<td>79</td>
+</tr>
+<tr>
+<th>0</th>
+<td>2752 Cherry</td>
+<td>2752 Cherry Ave</td>
+<td>( Cherry, 100)</td>
+<td>100</td>
+</tr>
+<tr>
+<th>4</th>
+<td>78 Summit St</td>
+<td>78 Summit St.</td>
+<td>( Summit St, 100)</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">FN_ranked</span> <span class="o">=</span> <span class="n">example_addresses</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">FN_idx</span><span class="p">,</span> <span class="n">inspection_columns</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'match_score'</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">FN_ranked</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[12]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>cannonical_list</th>
+<th>entropic_list</th>
+<th>best_match</th>
+<th>match_score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>1</th>
+<td>61 Low Street 70</td>
+<td>61 Low St #70</td>
+<td>( Low Street 70, 64)</td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As a human reviews records further away from decision boundary, they are less likely to be either False Positives or False Negatives.  A human tester can stop reviewing records from either list when they are satisfied that the data is fit for use.</p>
+<p>Combining strict syntax checking, fuzzy matching, and an inspection of ranked edit distance scores makes it possible to:</p>
+<ol>
+<li>Cull the ~15-25% of matches that can defy attempts to be captured with explicitly defined rulesets.</li>
+<li>Direct human attention to matches that are most likely to be mismatches.</li>
+</ol>
+<p>The computational complexity of calculating the Levenshtein distance is O(M x N) where M is the length of the first string, and N is the length of the second.  I've compared two short strings together in this example, although it can be applied to matching one short string with one (very) long string.  It can also be applied in other syntax-level data integration problems as long as an integrator takes care in:</p>
+<ol>
+<li>Specifying the logic that binds exact matching and fuzzy matching</li>
+<li>Using all available attributes to prune the search space</li>
+</ol>
+</div>
+</div>
+</div>
