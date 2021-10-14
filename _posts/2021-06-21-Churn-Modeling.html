@@ -681,7 +681,7 @@ toc: true
 <p>A BetaGeoFitter takes the customer level stats of frequency and recency as well as the time interval for the entire series (<strong>x</strong>, <strong>t_x</strong>, and <strong>T</strong> in the literature) and obtains 4 population wide parameters:</p>
 <p><strong>alpha</strong> and <strong>r</strong>: the parameters for the Gamma distribution that model customer transaction rates</p>
 <p><strong>a</strong> and <strong>b</strong>: the parameters for the Beta distribution that model customer churn</p>
-<p>With these 3 customer level parameters, and 4 population wide parameters, we can calculate the probability that the customer is alive at any given time with the <a href="https://www.brucehardie.com/notes/021/palive_for_BGNBD.pdf">formula</a>:</p>
+<p>With these 3 customer level parameters, and 4 population wide parameters, we can calculate the probability that the customer is alive at any given time with the <a href="https://www.brucehardie.com/notes/021/palive_for_BG/.pdf">formula</a>:</p>
 
 </div>
 </div>
@@ -812,7 +812,7 @@ toc: true
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="List-of-At-Risk-Customers">List of At-Risk Customers<a class="anchor-link" href="#List-of-At-Risk-Customers">&#182;</a></h4><p>The BD/NBD model shines when identifying higher frequency customers who have not crossed the threshold into a different bin of the RFM approach.  A P_alive score for every customer enables the creation of lists of customers who are "at-risk" of churning.  This is especially useful when combined with the customer's monetary value.</p>
+<h4 id="List-of-At-Risk-Customers">List of At-Risk Customers<a class="anchor-link" href="#List-of-At-Risk-Customers">&#182;</a></h4><p>The BG/NBD model shines when identifying higher frequency customers who have not crossed the threshold into a different bin of the RFM approach.  A P_alive score for every customer enables the creation of lists of customers who are "at-risk" of churning.  This is especially useful when combined with the customer's monetary value.</p>
 <h4 id="Generation-of-Customer-Segments">Generation of Customer Segments<a class="anchor-link" href="#Generation-of-Customer-Segments">&#182;</a></h4><p>When combined with other customer information (e.g. demographics), the P_alive score can help generate segments of customers who are worth targeting. Use a calibration/holdout set in order to obtain residuals for the P_alive predictions. Think against the gradient, fit a parsimonious parametric model on the residuals, and interpret the results!</p>
 
 </div>
